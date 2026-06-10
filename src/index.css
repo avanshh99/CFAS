@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 142.1 76.2% 36.3%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1 {
+    @apply text-3xl font-bold text-gray-900 tracking-tight;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold text-gray-900;
+  }
+
+  h3 {
+    @apply text-xl font-semibold text-gray-800;
+  }
+}
+
+@layer components {
+  .eco-card {
+    @apply bg-white rounded-xl shadow-card border border-gray-100 p-6 transition-all duration-200;
+  }
+
+  .eco-card:hover {
+    @apply shadow-card-hover;
+  }
+
+  .eco-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white font-medium rounded-lg
+           hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+           transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .eco-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-green-700 font-medium rounded-lg
+           border border-green-200 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+           transition-all duration-200;
+  }
+
+  .eco-input {
+    @apply w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900
+           placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .eco-label {
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
+  }
+
+  .eco-badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md;
+  }
+
+  .eco-badge-green {
+    @apply eco-badge bg-green-100 text-green-800;
+  }
+
+  .eco-badge-amber {
+    @apply eco-badge bg-amber-100 text-amber-800;
+  }
+
+  .eco-badge-red {
+    @apply eco-badge bg-red-100 text-red-800;
+  }
+
+  .eco-skeleton {
+    @apply animate-pulse bg-gray-200 rounded-md;
+  }
+
+  .eco-gradient-text {
+    @apply bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent;
+  }
+
+  .eco-glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
