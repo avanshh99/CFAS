@@ -75,7 +75,7 @@ const ActionList: React.FC<IActionListProps> = ({ actions, onUpdateStatus, class
                   <div className="flex-shrink-0 mt-0.5">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       action.status === 'done'
-                        ? 'bg-green-100 text-green-600'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-500'
                     }`}>
                       {categoryIcon}
@@ -115,7 +115,7 @@ const ActionList: React.FC<IActionListProps> = ({ actions, onUpdateStatus, class
                           size="sm"
                           onClick={() => onUpdateStatus(action.id, 'done')}
                           aria-label={`Mark done: ${action.description}`}
-                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                          className="text-green-800 hover:text-green-900 hover:bg-green-50"
                         >
                           <Check className="h-3.5 w-3.5" />
                         </Button>
@@ -136,14 +136,14 @@ const ActionList: React.FC<IActionListProps> = ({ actions, onUpdateStatus, class
                         size="sm"
                         onClick={() => onUpdateStatus(action.id, 'done')}
                         aria-label={`Mark done: ${action.description}`}
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        className="text-green-800 hover:text-green-900 hover:bg-green-50"
                       >
                         <Check className="h-3.5 w-3.5 mr-1" />
                         Done
                       </Button>
                     )}
                     {action.status === 'done' && (
-                      <Check className="h-4 w-4 text-green-500" />
+                      <Check className="h-4 w-4 text-green-800" />
                     )}
                   </div>
                 </div>

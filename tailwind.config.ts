@@ -42,6 +42,7 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        'accent-green': '#16a34a',
         green: {
           primary: '#16a34a',
           light: '#dcfce7',

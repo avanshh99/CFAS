@@ -72,14 +72,14 @@ const CategoryBreakdown: React.FC<ICategoryBreakdownProps> = ({ data, className 
       </CardHeader>
       <CardContent>
         {chartData.length > 0 ? (
-          <div
-            role="img"
-            aria-label={`Donut chart showing emission breakdown: ${chartData
-              .map((d) => `${d.name} accounts for ${d.percent}%`)
-              .join(', ')}`}
-          >
+          <div>
             <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
+              <PieChart
+                role="img"
+                aria-labelledby="chart-title-breakdown chart-desc-breakdown"
+              >
+                <title id="chart-title-breakdown">Category Breakdown Chart</title>
+                <desc id="chart-desc-breakdown">Donut chart representing weekly carbon emissions by category</desc>
                 <Pie
                   data={chartData}
                   cx="50%"
@@ -92,7 +92,13 @@ const CategoryBreakdown: React.FC<ICategoryBreakdownProps> = ({ data, className 
                   strokeWidth={0}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      tabIndex={0}
+                      aria-label={`${entry.name}: ${entry.percent}%`}
+                      className="focus:outline-none focus:stroke-green-600 focus:stroke-2"
+                    />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />

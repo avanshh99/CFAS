@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import type { IChatMessage, IChatSession } from '@/types';
 import { encryptData, decryptData } from '@/utils/encrypt';
+import { MAX_CHAT_HISTORY_LIMIT } from '@/constants';
 
 // ── Storage keys ─────────────────────────────────────────────
 const SESSIONS_KEY = 'ecosense-chat-sessions';
@@ -113,7 +114,13 @@ export const useChatStore = create<IChatState>((set, get) => ({
 
   // ── Message actions ───────────────────────────────────────────
   addMessage: (message: IChatMessage): void => {
-    set((state) => ({ messages: [...state.messages, message], error: null }));
+    set((state) => {
+      let msgs = [...state.messages, message];
+      if (msgs.length > MAX_CHAT_HISTORY_LIMIT) {
+        msgs = msgs.slice(msgs.length - MAX_CHAT_HISTORY_LIMIT);
+      }
+      return { messages: msgs, error: null };
+    });
     setTimeout(() => get().saveToStorage(), 0);
   },
 

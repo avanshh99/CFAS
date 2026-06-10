@@ -5,25 +5,25 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Leaf, Sparkles, Plus, Trophy } from 'lucide-react';
-import { useCarbon } from '../hooks/useCarbon';
-import { useCarbonStore } from '../store/carbonStore';
-import { useGamificationStore } from '../store/gamificationStore';
-import FootprintCard from '../components/dashboard/FootprintCard';
-import TrendChart from '../components/dashboard/TrendChart';
-import CategoryBreakdown from '../components/dashboard/CategoryBreakdown';
-import ActionList from '../components/dashboard/ActionList';
-import ComparisonBar from '../components/insights/ComparisonBar';
-import { Button } from '../components/ui/Button';
+import { useCarbon } from '@/hooks/useCarbon';
+import { useCarbonStore } from '@/store/carbonStore';
+import { useGamificationStore } from '@/store/gamificationStore';
+import FootprintCard from '@/components/dashboard/FootprintCard';
+import TrendChart from '@/components/dashboard/TrendChart';
+import CategoryBreakdown from '@/components/dashboard/CategoryBreakdown';
+import ActionList from '@/components/dashboard/ActionList';
+import ComparisonBar from '@/components/insights/ComparisonBar';
+import { Button } from '@/components/ui/Button';
 
 // Gamification & new tracking widgets
-import XPBar from '../components/gamification/XPBar';
-import StreakBadge from '../components/gamification/StreakBadge';
-import ChallengeCard from '../components/gamification/ChallengeCard';
-import HabitTracker from '../components/tracker/HabitTracker';
-import CarbonEquivalence from '../components/dashboard/CarbonEquivalence';
-import OffsetCalculator from '../components/dashboard/OffsetCalculator';
-import CalendarHeatmap from '../components/dashboard/CalendarHeatmap';
-import WeeklyReportModal from '../components/gamification/WeeklyReportModal';
+import XPBar from '@/components/gamification/XPBar';
+import StreakBadge from '@/components/gamification/StreakBadge';
+import ChallengeCard from '@/components/gamification/ChallengeCard';
+import HabitTracker from '@/components/tracker/HabitTracker';
+import CarbonEquivalence from '@/components/dashboard/CarbonEquivalence';
+import OffsetCalculator from '@/components/dashboard/OffsetCalculator';
+import CalendarHeatmap from '@/components/dashboard/CalendarHeatmap';
+import WeeklyReportModal from '@/components/gamification/WeeklyReportModal';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();

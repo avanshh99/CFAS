@@ -5,6 +5,9 @@
 /** Maximum number of assistant and user turns to feed into the API context window */
 export const MAX_CHAT_HISTORY = 8;
 
+/** Maximum message state history limit for UI session */
+export const MAX_CHAT_HISTORY_LIMIT = 11;
+
 /** Default monthly carbon budget in kg CO₂e */
 export const MONTHLY_BUDGET_KG = 200;
 

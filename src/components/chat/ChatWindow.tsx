@@ -40,6 +40,9 @@ const ChatWindow: React.FC<IChatWindowProps> = ({ onSend, className }) => {
   const [input, setInput] = useState('');
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [srAnnouncement, setSrAnnouncement] = useState('');
 
   const activeMessages = messages.filter((m) => m.role !== 'system');
 
@@ -59,6 +62,34 @@ const ChatWindow: React.FC<IChatWindowProps> = ({ onSend, className }) => {
   useEffect(() => {
     scrollToBottom('auto');
   }, [scrollToBottom]);
+
+  // Online / Offline state tracking
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Focus management when AI response finishes streaming
+  const prevStreaming = useRef(isStreaming);
+  useEffect(() => {
+    if (prevStreaming.current && !isStreaming) {
+      setSrAnnouncement('EcoSense AI has responded');
+      // Timeout to clear announcement so it can be announced next time
+      setTimeout(() => setSrAnnouncement(''), 1000);
+      
+      // Delay focus slightly to ensure the element is re-enabled in the DOM
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+    prevStreaming.current = isStreaming;
+  }, [isStreaming]);
 
   const handleScroll = useCallback((): void => {
     if (scrollRef.current) {
@@ -134,59 +165,55 @@ const ChatWindow: React.FC<IChatWindowProps> = ({ onSend, className }) => {
         )}
       </div>
 
+      {/* Offline Banner */}
+      {!isOnline && (
+        <div id="offline-banner" className="p-3 text-sm text-amber-800 bg-amber-50 border-b border-amber-200 text-center font-medium" role="status">
+          You are offline. AI assistant features may be limited.
+        </div>
+      )}
+
       {/* Messages */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin flex flex-col"
+        className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin"
+        role="log"
+        aria-label="Chat messages history"
       >
-        {activeMessages.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto my-auto">
-            <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
-              <span className="text-2xl">🌱</span>
-            </div>
-            <h3 className="text-base font-semibold text-gray-900">Meet your Carbon Assistant</h3>
-            <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
-              I can analyze your carbon activities, recommend green actions, or compare your emissions against averages.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {activeMessages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
-            {isStreaming && <TypingIndicator />}
-            {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg" role="alert">
-                Error: {error}
-              </div>
-            )}
+        {activeMessages.map((msg) => (
+          <MessageBubble key={msg.id} message={msg} />
+        ))}
+
+        {isStreaming && <TypingIndicator />}
+
+        {error && (
+          <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-red-50 border border-red-100 text-center">
+            <span className="text-lg">⚠️</span>
+            <p className="text-xs text-red-700 mt-1 font-medium">{error}</p>
           </div>
         )}
       </div>
 
-      {/* Bottom controls */}
-      <div className="p-4 border-t border-gray-100 bg-white space-y-3 relative">
+      {/* Bottom area */}
+      <div className="p-4 border-t border-gray-100 bg-gray-50/50 relative">
         {showScrollBtn && (
-          <Button
-            variant="outline"
-            size="icon"
+          <button
             onClick={() => scrollToBottom('smooth')}
-            className="absolute -top-12 right-6 rounded-full shadow-lg border-gray-200 bg-white hover:bg-gray-50 z-10"
+            className="absolute -top-12 left-1/2 -translate-x-1/2 bg-green-600 hover:bg-green-700 text-white rounded-full p-2 shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
             aria-label="Scroll to bottom"
           >
-            <ArrowDown className="h-4 w-4 text-gray-600" />
-          </Button>
+            <ArrowDown className="h-4 w-4" />
+          </button>
         )}
 
         {isReadOnly ? (
-          <div className="text-center py-2">
-            <p className="text-xs text-gray-400">This is a read-only view of a past conversation.</p>
+          <div className="text-center py-2 text-xs text-gray-500 font-semibold">
+            You are viewing a saved conversation session.
             <button
               onClick={exitSessionView}
-              className="mt-1 text-xs text-green-600 hover:text-green-700 font-semibold underline"
+              className="text-green-700 hover:underline ml-1 font-bold"
             >
-              Start a new chat →
+              Start new chat
             </button>
           </div>
         ) : (
@@ -210,6 +237,7 @@ const ChatWindow: React.FC<IChatWindowProps> = ({ onSend, className }) => {
             {/* Input form */}
             <form onSubmit={handleSubmit} className="flex gap-2">
               <input
+                ref={inputRef}
                 type="text"
                 role="textbox"
                 value={input}
@@ -235,7 +263,7 @@ const ChatWindow: React.FC<IChatWindowProps> = ({ onSend, className }) => {
 
       {/* Live region for accessibility */}
       <div aria-live="polite" aria-atomic="false" className="sr-only">
-        {lastMsg?.role === 'assistant' ? lastMsg.content : ''}
+        {srAnnouncement || (lastMsg?.role === 'assistant' ? lastMsg.content : '')}
       </div>
     </Card>
   );

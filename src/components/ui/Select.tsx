@@ -18,15 +18,18 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, options, error, label, onChange, ...props }, ref) => {
+  ({ className, options, error, label, onChange, id, ...props }, ref) => {
+    const errorId = id ? `${id}-error` : undefined;
+
     return (
       <div className="w-full">
         {label && (
-          <label className="eco-label" htmlFor={props.id}>
+          <label className="eco-label" htmlFor={id}>
             {label}
           </label>
         )}
         <select
+          id={id}
           ref={ref}
           className={cn(
             'flex h-10 w-full rounded-lg border bg-white px-4 py-2 text-sm text-gray-900',
@@ -37,7 +40,8 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             className
           )}
           onChange={(e) => onChange(e.target.value)}
-          aria-invalid={error ? 'true' : undefined}
+          aria-invalid={error ? 'true' : 'false'}
+          aria-describedby={error ? errorId : undefined}
           {...props}
         >
           <option value="">Select...</option>
@@ -47,8 +51,8 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
-        {error && (
-          <p className="mt-1 text-xs text-red-500" role="alert">
+        {error && errorId && (
+          <p id={errorId} className="mt-1 text-xs text-red-500" role="alert" aria-live="assertive">
             {error}
           </p>
         )}

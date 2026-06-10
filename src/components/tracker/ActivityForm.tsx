@@ -90,6 +90,28 @@ const ActivityForm: React.FC<IActivityFormProps> = ({ onSubmit, isLoading = fals
     []
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>, index: number): void => {
+      let nextIdx = index;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        nextIdx = (index + 1) % categoryConfig.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        nextIdx = (index - 1 + categoryConfig.length) % categoryConfig.length;
+      } else {
+        return;
+      }
+      e.preventDefault();
+      const nextCat = categoryConfig[nextIdx];
+      if (nextCat) {
+        handleCategoryChange(nextCat.key);
+        // Focus the newly active button
+        const btn = document.getElementById(`category-btn-${nextCat.key}`);
+        btn?.focus();
+      }
+    },
+    [handleCategoryChange]
+  );
+
   const onFormSubmit = useCallback(
     (data: FormData): void => {
       const co2e = calculateEmission(selectedType, data.value);
@@ -120,13 +142,16 @@ const ActivityForm: React.FC<IActivityFormProps> = ({ onSubmit, isLoading = fals
               role="radiogroup"
               aria-labelledby="category-label"
             >
-              {categoryConfig.map((cat) => (
+              {categoryConfig.map((cat, idx) => (
                 <button
+                  id={`category-btn-${cat.key}`}
                   key={cat.key}
                   type="button"
                   role="radio"
                   aria-checked={selectedCategory === cat.key}
+                  tabIndex={selectedCategory === cat.key ? 0 : -1}
                   onClick={() => handleCategoryChange(cat.key)}
+                  onKeyDown={(e) => handleKeyDown(e, idx)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     selectedCategory === cat.key
                       ? 'bg-green-100 text-green-800 ring-2 ring-green-500 ring-offset-1'
@@ -168,7 +193,6 @@ const ActivityForm: React.FC<IActivityFormProps> = ({ onSubmit, isLoading = fals
               step="0.1"
               placeholder={`Enter ${currentUnit}...`}
               error={errors.value?.message}
-              aria-describedby={errors.value ? 'value-error' : undefined}
               {...register('value', { valueAsNumber: true })}
             />
           </div>

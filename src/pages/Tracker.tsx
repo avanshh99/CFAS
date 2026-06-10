@@ -3,11 +3,11 @@
 // ============================================================
 
 import React, { useEffect } from 'react';
-import ActivityForm from '../components/tracker/ActivityForm';
-import ActivityLogger from '../components/tracker/ActivityLogger';
-import HistoryTable from '../components/tracker/HistoryTable';
-import { useCarbon } from '../hooks/useCarbon';
-import { useCarbonStore } from '../store/carbonStore';
+import ActivityForm from '@/components/tracker/ActivityForm';
+import ActivityLogger from '@/components/tracker/ActivityLogger';
+import HistoryTable from '@/components/tracker/HistoryTable';
+import { useCarbon } from '@/hooks/useCarbon';
+import { useCarbonStore } from '@/store/carbonStore';
 
 const Tracker: React.FC = () => {
   const { logActivity, deleteActivity, recentActivities } = useCarbon();

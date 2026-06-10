@@ -1,9 +1,8 @@
 // HabitTracker — daily habit chips with one-tap logging
 import React from 'react';
-import { HABITS } from '../../utils/gamification';
-import { useGamificationStore } from '../../store/gamificationStore';
-import { getTodayString } from '../../utils/gamification';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { HABITS, getTodayString } from '@/utils/gamification';
+import { useGamificationStore } from '@/store/gamificationStore';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 const HabitTracker: React.FC<{ className?: string }> = ({ className }) => {
   const { habitsLog, toggleHabit } = useGamificationStore();
@@ -22,7 +21,7 @@ const HabitTracker: React.FC<{ className?: string }> = ({ className }) => {
           </span>
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
             allComplete
-              ? 'bg-green-100 text-green-700 border border-green-200'
+              ? 'bg-green-100 text-green-800 border border-green-200'
               : 'bg-gray-100 text-gray-600'
           }`}>
             {completedCount}/{HABITS.length}
@@ -34,7 +33,7 @@ const HabitTracker: React.FC<{ className?: string }> = ({ className }) => {
       <CardContent>
         {allComplete && (
           <div className="mb-3 p-2.5 rounded-lg bg-green-50 border border-green-200 text-center">
-            <p className="text-xs font-semibold text-green-700">
+            <p className="text-xs font-semibold text-green-800">
               🌟 All habits done! +{HABITS.length * 15} XP earned today
             </p>
           </div>
@@ -63,7 +62,7 @@ const HabitTracker: React.FC<{ className?: string }> = ({ className }) => {
                   <p className="text-[10px] text-gray-400">+{habit.xp} XP</p>
                 </div>
                 {done && (
-                  <span className="ml-auto text-green-600 font-bold text-base shrink-0">✓</span>
+                  <span className="ml-auto text-green-800 font-bold text-base shrink-0">✓</span>
                 )}
               </button>
             );

@@ -1,9 +1,9 @@
 // ChallengeCard — weekly challenge with progress and countdown
 import React, { useEffect, useState } from 'react';
 import { Trophy, CheckCircle2 } from 'lucide-react';
-import { getWeeklyChallenge } from '../../utils/gamification';
-import { useGamificationStore } from '../../store/gamificationStore';
-import { Button } from '../ui/Button';
+import { getWeeklyChallenge } from '@/utils/gamification';
+import { useGamificationStore } from '@/store/gamificationStore';
+import { Button } from '@/components/ui/Button';
 
 const ChallengeCard: React.FC = () => {
   const {

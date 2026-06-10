@@ -4,11 +4,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { Menu } from 'lucide-react';
-import ChatWindow from '../components/chat/ChatWindow';
-import ChatHistorySidebar from '../components/chat/ChatHistorySidebar';
-import { useChat } from '../hooks/useChat';
-import { useCarbonStore } from '../store/carbonStore';
-import { useChatStore } from '../store/chatStore';
+import ChatWindow from '@/components/chat/ChatWindow';
+import ChatHistorySidebar from '@/components/chat/ChatHistorySidebar';
+import { useChat } from '@/hooks/useChat';
+import { useCarbonStore } from '@/store/carbonStore';
+import { useChatStore } from '@/store/chatStore';
 
 const Chat: React.FC = () => {
   const { loadFromStorage: loadCarbonFromStorage } = useCarbonStore();

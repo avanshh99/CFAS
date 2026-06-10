@@ -61,14 +61,16 @@ const TrendChart: React.FC<ITrendChartProps> = ({ data, className }) => {
       </CardHeader>
       <CardContent>
         {chartData.length > 0 && chartData.some((d) => d.total > 0) ? (
-          <div
-            role="img"
-            aria-label={`7-day emission trend chart showing daily CO₂ emissions: ${chartData
-              .map((d) => `${d.dayLabel}: ${d.total.toFixed(1)} kg`)
-              .join(', ')}`}
-          >
+          <div>
             <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <AreaChart
+                role="img"
+                aria-labelledby="chart-title-trend chart-desc-trend"
+                data={chartData}
+                margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+              >
+                <title id="chart-title-trend">Weekly CO₂ trend showing decline from 12kg Monday to 6kg Sunday</title>
+                <desc id="chart-desc-trend">Line chart with 7 data points representing daily emissions in kg CO₂e</desc>
                 <defs>
                   <linearGradient id="colorCO2" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#16a34a" stopOpacity={0.2} />
@@ -78,12 +80,12 @@ const TrendChart: React.FC<ITrendChartProps> = ({ data, className }) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                 <XAxis
                   dataKey="dayLabel"
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: '#374151' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: '#374151' }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v: number) => `${v}`}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getLevelForXP, getXPProgress, getWeeklyChallenge, getTodayString, LEVELS } from '@/utils/gamification';
+import { getLevelForXP, getXPProgress, getWeeklyChallenge, getTodayString } from '@/utils/gamification';
 
 describe('Gamification Utilities', () => {
   describe('getLevelForXP', () => {

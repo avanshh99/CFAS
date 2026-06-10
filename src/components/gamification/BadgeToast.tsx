@@ -1,7 +1,7 @@
 // BadgeToast — animated toast popup when a badge is newly unlocked
 import React, { useEffect } from 'react';
-import { BADGES } from '../../utils/gamification';
-import { useGamificationStore } from '../../store/gamificationStore';
+import { BADGES } from '@/utils/gamification';
+import { useGamificationStore } from '@/store/gamificationStore';
 
 const BadgeToast: React.FC = () => {
   const { newlyUnlockedBadges, dismissNewBadges } = useGamificationStore();

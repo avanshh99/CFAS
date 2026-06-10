@@ -29,7 +29,7 @@ export function calculateEmission(type: EmissionFactorKey, value: number): numbe
 
   const factor = EMISSION_FACTORS[type];
   if (factor === undefined) {
-    throw new Error(`Unknown emission factor: ${type}`);
+    throw new TypeError(`Unknown emission factor: ${type}`);
   }
 
   return Math.round(factor * value * 1000) / 1000;
