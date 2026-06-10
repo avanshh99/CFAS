@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import type { Activity, SuggestedAction, UserSettings } from '../types';
 import { encryptData, decryptData } from '../utils/encrypt';
+import { useGamificationStore } from './gamificationStore';
 
 interface CarbonState {
   activities: Activity[];
@@ -50,6 +51,42 @@ export const useCarbonStore = create<CarbonState>((set, get) => ({
       const newActivities = [activity, ...state.activities];
       return { activities: newActivities };
     });
+
+    // Gamification checks
+    const gamification = useGamificationStore.getState();
+    gamification.checkAndUpdateStreak();
+    gamification.unlockBadge('first-step');
+    gamification.addXP(10); // +10 XP for logging an activity
+
+    // Compute weekly counts for challenge & badge verification
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const currentActivities = get().activities;
+    const weeklyActs = currentActivities.filter((a) => a.timestamp >= oneWeekAgo);
+
+    const carTrips = weeklyActs.filter((a) => a.type === 'car_petrol_per_km' || a.type === 'car_diesel_per_km').length;
+    const vegMeals = weeklyActs.filter((a) => a.type === 'vegetables_per_kg' || a.type === 'rice_per_kg' || a.type === 'wheat_per_kg' || a.type === 'lentils_per_kg').length;
+    const electricityKWh = weeklyActs.filter((a) => a.category === 'energy').reduce((sum, a) => sum + a.value, 0);
+    const transitTrips = weeklyActs.filter((a) => a.type === 'metro_per_km' || a.type === 'bus_per_km').length;
+
+    const allHabitsLoggedDays = Object.values(gamification.habitsLog).filter((list) => list.length >= 6).length;
+
+    // Badges based on weekly activity patterns
+    if (transitTrips >= 5) {
+      gamification.unlockBadge('transit-switcher');
+    }
+    if (vegMeals >= 5) {
+      gamification.unlockBadge('plant-powered');
+    }
+
+    // Weekly challenge evaluation
+    gamification.checkChallengeCompletion({
+      carTripsThisWeek: carTrips,
+      vegetarianMealsThisWeek: vegMeals,
+      electricityKWhThisWeek: electricityKWh,
+      transitTripsThisWeek: transitTrips,
+      allHabitsLoggedDays,
+    });
+
     // Persist after state update
     setTimeout(() => get().saveToStorage(), 0);
   },

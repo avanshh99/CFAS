@@ -13,6 +13,7 @@ const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Tracker = React.lazy(() => import('./pages/Tracker'));
 const Chat = React.lazy(() => import('./pages/Chat'));
 const Insights = React.lazy(() => import('./pages/Insights'));
+const Achievements = React.lazy(() => import('./pages/Achievements'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 
 const PageLoader: React.FC = () => (
@@ -39,6 +40,7 @@ function App() {
               <Route path="/tracker" element={<Tracker />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/insights" element={<Insights />} />
+              <Route path="/achievements" element={<Achievements />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </Suspense>

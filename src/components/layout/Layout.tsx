@@ -6,12 +6,14 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import BadgeToast from '../gamification/BadgeToast';
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Dashboard',
   '/tracker': 'Activity Tracker',
   '/chat': 'AI Assistant',
   '/insights': 'Insights',
+  '/achievements': 'Achievements',
   '/settings': 'Settings',
 };
 
@@ -40,6 +42,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
+
+      {/* Global achievement notifications */}
+      <BadgeToast />
     </div>
   );
 };

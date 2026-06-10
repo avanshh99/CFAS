@@ -11,6 +11,8 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Button } from '../components/ui/Button';
 import { Skeleton } from '../components/ui/Skeleton';
 import InsightCard from '../components/insights/InsightCard';
+import MonthlyComparison from '../components/dashboard/MonthlyComparison';
+import { useGamificationStore } from '../store/gamificationStore';
 import type { Insight, SuggestedAction } from '../types';
 
 const defaultInsights: Insight[] = [
@@ -161,6 +163,7 @@ User Context:
         setCachedInsights(mappedInsights);
         setActions(mappedActions);
         setLastGeneratedTime(Date.now());
+        useGamificationStore.getState().incrementInsights();
       } else {
         throw new Error('Malformed JSON structure from AI response');
       }
@@ -233,9 +236,10 @@ User Context:
                 </p>
               </div>
             </div>
-            <Button variant="outline" onClick={handleGenerate} disabled={isLoading}>
-              Recalculate
-            </Button>
+          </div>
+
+          <div className="pt-4">
+            <MonthlyComparison activities={activities} />
           </div>
         </>
       )}

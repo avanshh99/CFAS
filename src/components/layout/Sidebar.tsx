@@ -12,6 +12,7 @@ import {
   Settings,
   Leaf,
   X,
+  Trophy,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -25,6 +26,7 @@ const navItems = [
   { path: '/tracker', label: 'Tracker', icon: PenLine },
   { path: '/chat', label: 'AI Chat', icon: MessageCircle },
   { path: '/insights', label: 'Insights', icon: Lightbulb },
+  { path: '/achievements', label: 'Achievements', icon: Trophy },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
