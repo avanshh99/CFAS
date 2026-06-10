@@ -4,18 +4,18 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, Sparkles, AlertTriangle } from 'lucide-react';
-import { generateInsights } from '../api/groq';
-import { useCarbon } from '../hooks/useCarbon';
-import { useCarbonStore } from '../store/carbonStore';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { Button } from '../components/ui/Button';
-import { Skeleton } from '../components/ui/Skeleton';
-import InsightCard from '../components/insights/InsightCard';
-import MonthlyComparison from '../components/dashboard/MonthlyComparison';
-import { useGamificationStore } from '../store/gamificationStore';
-import type { Insight, SuggestedAction } from '../types';
+import { generateInsights } from '@/api/groq';
+import { useCarbon } from '@/hooks/useCarbon';
+import { useCarbonStore } from '@/store/carbonStore';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { Button } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
+import InsightCard from '@/components/insights/InsightCard';
+import MonthlyComparison from '@/components/dashboard/MonthlyComparison';
+import { useGamificationStore } from '@/store/gamificationStore';
+import type { IInsight, ISuggestedAction } from '@/types';
 
-const defaultInsights: Insight[] = [
+const defaultInsights: IInsight[] = [
   {
     id: 'in-1',
     type: 'pattern',
@@ -42,7 +42,7 @@ const defaultInsights: Insight[] = [
   },
 ];
 
-const defaultActions: SuggestedAction[] = [
+const defaultActions: ISuggestedAction[] = [
   {
     id: 'act-1',
     description: 'Switch to Delhi Metro or train for twice-weekly commute',
@@ -69,12 +69,16 @@ const defaultActions: SuggestedAction[] = [
   },
 ];
 
+/**
+ * Insights component fetches and presents customized carbon reduction feedback
+ * generated dynamically by the AI model.
+ */
 const Insights: React.FC = () => {
   const { stats, activities } = useCarbon();
   const { actions, setActions, loadFromStorage } = useCarbonStore();
 
-  const [cachedInsights, setCachedInsights] = useLocalStorage<Insight[]>('ecosense-cached-insights', defaultInsights);
-  const [_lastGeneratedTime, setLastGeneratedTime] = useLocalStorage<number>('ecosense-insights-time', Date.now() - 30 * 60 * 1000); // 30 mins ago default
+  const [cachedInsights, setCachedInsights] = useLocalStorage<IInsight[]>('ecosense-cached-insights', defaultInsights);
+  const [_lastGeneratedTime, setLastGeneratedTime] = useLocalStorage<number>('ecosense-insights-time', Date.now() - 30 * 60 * 1000);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,7 +86,7 @@ const Insights: React.FC = () => {
     loadFromStorage();
   }, [loadFromStorage]);
 
-  const handleGenerate = useCallback(async () => {
+  const handleGenerate = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     setError(null);
 
@@ -129,7 +133,6 @@ User Context:
         { role: 'user', content: userMessage },
       ]);
 
-      // Parse JSON from returned text safely
       let cleanedText = resultText.trim();
       if (cleanedText.startsWith('```json')) {
         cleanedText = cleanedText.slice(7);
@@ -142,19 +145,19 @@ User Context:
       const data = JSON.parse(cleanedText);
 
       if (data.insights && Array.isArray(data.insights) && data.actions && Array.isArray(data.actions)) {
-        const mappedInsights: Insight[] = data.insights.map((ins: any, idx: number) => ({
+        const mappedInsights: IInsight[] = data.insights.map((ins: { type?: string; title?: string; description?: string }, idx: number) => ({
           id: `in-ai-${Date.now()}-${idx}`,
-          type: ins.type || 'actionable',
+          type: (ins.type === 'pattern' || ins.type === 'comparison' || ins.type === 'actionable') ? ins.type : 'actionable',
           title: ins.title || 'Insight',
           description: ins.description || '',
           icon: ins.type === 'pattern' ? 'TrendingUp' : ins.type === 'comparison' ? 'Compass' : 'Lightbulb',
           generatedAt: Date.now(),
         }));
 
-        const mappedActions: SuggestedAction[] = data.actions.map((act: any, idx: number) => ({
+        const mappedActions: ISuggestedAction[] = data.actions.map((act: { description?: string; category?: string; monthlySavingKg?: number; difficulty?: string }, idx: number) => ({
           id: `act-ai-${Date.now()}-${idx}`,
           description: act.description || 'Reduce carbon footprint',
-          category: act.category || 'energy',
+          category: (act.category === 'transport' || act.category === 'energy' || act.category === 'food' || act.category === 'shopping' || act.category === 'waste') ? act.category : 'energy',
           monthlySavingKg: Number(act.monthlySavingKg) || 10,
           difficulty: act.difficulty || 'Easy',
           status: 'suggested',
@@ -172,7 +175,6 @@ User Context:
       console.error('Failed to generate AI insights:', err);
       setError('Could not connect to the proxy server or parse the response. Using offline backup insights.');
       
-      // Fallback
       if (actions.length === 0) {
         setActions(defaultActions);
       }

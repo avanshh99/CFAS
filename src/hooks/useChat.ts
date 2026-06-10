@@ -3,12 +3,12 @@
 // ============================================================
 
 import { useCallback, useRef } from 'react';
-import { useChatStore } from '../store/chatStore';
-import { useCarbonStore } from '../store/carbonStore';
-import { streamChatFromProxy } from '../api/groq';
-import { sanitizeForAI } from '../utils/validators';
-import { computeDashboardStats } from '../utils/carbonCalculator';
-import type { ChatMessage } from '../types';
+import { useChatStore } from '@/store/chatStore';
+import { useCarbonStore } from '@/store/carbonStore';
+import { streamChatFromProxy } from '@/api/groq';
+import { sanitizeForAI } from '@/utils/validators';
+import { computeDashboardStats } from '@/utils/carbonCalculator';
+import type { IChatMessage, IChatSession } from '@/types';
 
 const SYSTEM_PROMPT_TEMPLATE = `
 You are EcoSense AI, a friendly and knowledgeable carbon footprint assistant.
@@ -31,6 +31,10 @@ Guidelines:
 - Support both English and Hinglish queries
 `;
 
+/**
+ * Builds system prompt dynamically based on the current state of carbon logs.
+ * @returns Built system prompt string
+ */
 function buildSystemPrompt(): string {
   const { activities, settings } = useCarbonStore.getState();
   const stats = computeDashboardStats(activities);
@@ -47,7 +51,26 @@ function buildSystemPrompt(): string {
     .replace('{recentActivities}', recentActivitySummary);
 }
 
-export function useChat() {
+export interface IUseChatReturn {
+  messages: IChatMessage[];
+  isStreaming: boolean;
+  error: string | null;
+  viewingSessionId: string | null;
+  sessions: IChatSession[];
+  sendMessage: (content: string) => Promise<void>;
+  stopStreaming: () => void;
+  saveAndClearSession: () => void;
+  viewSession: (id: string) => void;
+  exitSessionView: () => void;
+  deleteSession: (id: string) => void;
+  persistActiveMessages: () => void;
+}
+
+/**
+ * Custom React hook for controlling Chat store operations and AI streaming.
+ * @returns Chat state properties and operations
+ */
+export function useChat(): IUseChatReturn {
   const {
     messages,
     isStreaming,
@@ -68,14 +91,14 @@ export function useChat() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string): Promise<void> => {
       if (isStreaming) return;
 
       const sanitized = sanitizeForAI(content);
       if (!sanitized) return;
 
       // Add user message
-      const userMessage: ChatMessage = {
+      const userMessage: IChatMessage = {
         id: `msg-${Date.now()}-user`,
         role: 'user',
         content: sanitized,
@@ -84,7 +107,7 @@ export function useChat() {
       addMessage(userMessage);
 
       // Prepare assistant placeholder
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: IChatMessage = {
         id: `msg-${Date.now()}-assistant`,
         role: 'assistant',
         content: '',
@@ -109,7 +132,6 @@ export function useChat() {
           (text) => appendToLastMessage(text),
           () => {
             setStreaming(false);
-            // Auto-persist draft so a page refresh doesn't lose it
             useChatStore.getState().persistActiveMessages();
           },
           (err) => {
@@ -129,7 +151,7 @@ export function useChat() {
     [isStreaming, messages, addMessage, appendToLastMessage, setStreaming, setError]
   );
 
-  const stopStreaming = useCallback(() => {
+  const stopStreaming = useCallback((): void => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -151,4 +173,3 @@ export function useChat() {
     persistActiveMessages,
   };
 }
-

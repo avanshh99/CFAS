@@ -4,13 +4,14 @@
 
 import React from 'react';
 import { Trash2, Calendar, Car, Zap, UtensilsCrossed, ShoppingBag, Trash2 as TrashIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
-import type { Activity, ActivityCategory } from '../../types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import type { IActivity, ActivityCategory } from '@/types';
 
-interface HistoryTableProps {
-  activities: Activity[];
+/** Props interface for HistoryTable component */
+export interface IHistoryTableProps {
+  activities: IActivity[];
   onDelete: (id: string) => void;
   className?: string;
 }
@@ -31,8 +32,11 @@ const categoryBadgeVariants: Record<ActivityCategory, 'info' | 'warning' | 'dest
   waste: 'secondary',
 };
 
-const HistoryTable: React.FC<HistoryTableProps> = ({ activities, onDelete, className }) => {
-  const formatDate = (dateStr: string) => {
+/**
+ * HistoryTable displays a detailed list of previously logged activities with options to delete.
+ */
+const HistoryTable: React.FC<IHistoryTableProps> = ({ activities, onDelete, className }) => {
+  const formatDate = (dateStr: string): string => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-IN', {
       day: '2-digit',
@@ -67,48 +71,53 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ activities, onDelete, class
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {activities.map((activity) => (
-                  <tr
-                    key={activity.id}
-                    className="hover:bg-gray-50/50 transition-colors"
-                  >
-                    <td className="py-3.5 px-4 font-medium text-gray-950">
-                      {activity.label}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <Badge
-                        variant={categoryBadgeVariants[activity.category]}
-                        className="capitalize gap-1 flex-shrink-0"
-                      >
-                        <span className="opacity-70">{categoryIcons[activity.category]}</span>
-                        <span>{activity.category}</span>
-                      </Badge>
-                    </td>
-                    <td className="py-3.5 px-4 text-right text-gray-600">
-                      {activity.value.toFixed(1)} {activity.unit}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-semibold text-red-600">
-                      {activity.co2e.toFixed(2)} kg
-                    </td>
-                    <td className="py-3.5 px-4 text-gray-500 whitespace-nowrap">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {formatDate(activity.date)}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-gray-400 hover:text-red-600"
-                        onClick={() => onDelete(activity.id)}
-                        aria-label={`Delete ${activity.label} activity log`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {activities.map((activity) => {
+                  const badgeVariant = categoryBadgeVariants[activity.category];
+                  const categoryIcon = categoryIcons[activity.category];
+
+                  return (
+                    <tr
+                      key={activity.id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="py-3.5 px-4 font-medium text-gray-950">
+                        {activity.label}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Badge
+                          variant={badgeVariant}
+                          className="capitalize gap-1 flex-shrink-0"
+                        >
+                          <span className="opacity-70">{categoryIcon}</span>
+                          <span>{activity.category}</span>
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-right text-gray-600">
+                        {activity.value.toFixed(1)} {activity.unit}
+                      </td>
+                      <td className="py-3.5 px-4 text-right font-semibold text-red-600">
+                        {activity.co2e.toFixed(2)} kg
+                      </td>
+                      <td className="py-3.5 px-4 text-gray-500 whitespace-nowrap">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" />
+                          {formatDate(activity.date)}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-400 hover:text-red-600"
+                          onClick={() => onDelete(activity.id)}
+                          aria-label={`Delete ${activity.label} activity log`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

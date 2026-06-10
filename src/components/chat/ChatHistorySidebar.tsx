@@ -4,21 +4,27 @@
 
 import React, { useState, useMemo } from 'react';
 import { Plus, Search, Trash2, MessageSquare, X } from 'lucide-react';
-import type { ChatSession } from '../../types';
+import type { IChatSession } from '@/types';
+import { AUTO_CANCEL_CONFIRM_MS } from '@/constants';
 
-interface ChatHistorySidebarProps {
-  sessions: ChatSession[];
-  activeSessionId: string | null;    // currently viewed session id (null = live chat)
-  onNew: () => void;                  // start fresh new chat
-  onView: (id: string) => void;       // view a past session
-  onDelete: (id: string) => void;     // delete a session
-  onClose?: () => void;               // mobile: close sidebar
+/** Props interface for ChatHistorySidebar component */
+export interface IChatHistorySidebarProps {
+  sessions: IChatSession[];
+  activeSessionId: string | null;
+  onNew: () => void;
+  onView: (id: string) => void;
+  onDelete: (id: string) => void;
+  onClose?: () => void;
   className?: string;
 }
 
-// ── Date group helpers ────────────────────────────────────────
+/**
+ * Group label helper based on session timestamp.
+ * @param ts Timestamp of the session
+ * @returns Group label string (e.g. 'Today', 'Yesterday', or month/year)
+ */
 function getGroupLabel(ts: number): string {
-  const now  = new Date();
+  const now = new Date();
   const date = new Date(ts);
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -29,26 +35,43 @@ function getGroupLabel(ts: number): string {
   return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
 
-type GroupedSessions = { label: string; items: ChatSession[] }[];
+interface IGroupedSessionsItem {
+  label: string;
+  items: IChatSession[];
+}
 
-function groupByDate(sessions: ChatSession[]): GroupedSessions {
-  const map = new Map<string, ChatSession[]>();
+type IGroupedSessions = IGroupedSessionsItem[];
+
+/**
+ * Group sessions list by date labels.
+ * @param sessions Array of chat sessions
+ * @returns Grouped sessions array
+ */
+function groupByDate(sessions: IChatSession[]): IGroupedSessions {
+  const map = new Map<string, IChatSession[]>();
   const order: string[] = [];
 
   for (const s of sessions) {
     const label = getGroupLabel(s.updatedAt);
-    if (!map.has(label)) {
-      map.set(label, []);
+    const existing = map.get(label);
+    if (!existing) {
+      map.set(label, [s]);
       order.push(label);
+    } else {
+      existing.push(s);
     }
-    map.get(label)!.push(s);
   }
 
-  return order.map((label) => ({ label, items: map.get(label)! }));
+  return order.map((label) => ({
+    label,
+    items: map.get(label) || [],
+  }));
 }
 
-// ── Component ─────────────────────────────────────────────────
-const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
+/**
+ * ChatHistorySidebar displays past chat conversations grouped by date.
+ */
+const ChatHistorySidebar: React.FC<IChatHistorySidebarProps> = ({
   sessions,
   activeSessionId,
   onNew,
@@ -72,15 +95,14 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
 
   const groups = useMemo(() => groupByDate(filtered), [filtered]);
 
-  const handleDelete = (e: React.MouseEvent, id: string) => {
+  const handleDelete = (e: React.MouseEvent, id: string): void => {
     e.stopPropagation();
     if (deletingId === id) {
       onDelete(id);
       setDeletingId(null);
     } else {
       setDeletingId(id);
-      // Auto-cancel confirm after 3s
-      setTimeout(() => setDeletingId((prev) => (prev === id ? null : prev)), 3000);
+      setTimeout(() => setDeletingId((prev) => (prev === id ? null : prev)), AUTO_CANCEL_CONFIRM_MS);
     }
   };
 
@@ -176,7 +198,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                     <MessageSquare className="h-3.5 w-3.5 shrink-0 text-gray-500" />
                     <span className="flex-1 text-xs truncate leading-snug">{session.title}</span>
 
-                    {/* Delete button — shown on hover or when confirming */}
+                    {/* Delete button */}
                     <span
                       role="button"
                       tabIndex={0}

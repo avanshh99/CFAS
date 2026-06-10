@@ -6,12 +6,15 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Settings as SettingsIcon, Save, Trash2, ShieldAlert, Check } from 'lucide-react';
-import { useCarbonStore } from '../store/carbonStore';
-import { settingsSchema, type SettingsInput } from '../utils/validators';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
+import { useCarbonStore } from '@/store/carbonStore';
+import { settingsSchema, type SettingsInput } from '@/utils/validators';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
+/**
+ * Settings page allows users to customize carbon targets, regions, and currencies.
+ */
 const Settings: React.FC = () => {
   const { settings, updateSettings, clearActivities, loadFromStorage } = useCarbonStore();
   const [success, setSuccess] = useState(false);
@@ -40,13 +43,13 @@ const Settings: React.FC = () => {
     setValue('currency', settings.currency);
   }, [settings, setValue]);
 
-  const onSubmit = (data: SettingsInput) => {
+  const onSubmit = (data: SettingsInput): void => {
     updateSettings(data);
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
   };
 
-  const handleClearData = () => {
+  const handleClearData = (): void => {
     clearActivities();
     setConfirmClear(false);
   };

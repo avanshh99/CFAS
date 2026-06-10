@@ -3,15 +3,15 @@
 // ============================================================
 
 import { create } from 'zustand';
-import { encryptData, decryptData } from '../utils/encrypt';
+import { encryptData, decryptData } from '@/utils/encrypt';
 import {
   XP_REWARDS, getLevelForXP, getTodayString, BADGES, HABITS, getWeeklyChallenge,
-} from '../utils/gamification';
-import type { Challenge } from '../utils/gamification';
+} from '@/utils/gamification';
+import type { IChallenge } from '@/utils/gamification';
 
 const STORAGE_KEY = 'ecosense-gamification';
 
-interface GamificationState {
+interface IGamificationState {
   // XP & Level
   totalXP: number;
   level: number;
@@ -42,22 +42,72 @@ interface GamificationState {
   actionsCompletedCount: number;
 
   // ── Actions ────────────────────────────────────────────────
+  /**
+   * Add XP to the user's score and handle level up.
+   * @param amount The amount of XP to add
+   */
   addXP: (amount: number) => void;
+
+  /**
+   * Check and update the user's consecutive day logging streak.
+   */
   checkAndUpdateStreak: () => void;
+
+  /**
+   * Unlock a specific badge for the user.
+   * @param id The badge ID to unlock
+   */
   unlockBadge: (id: string) => void;
+
+  /**
+   * Dismiss the newly unlocked badges from the toast queue.
+   */
   dismissNewBadges: () => void;
+
+  /**
+   * Toggle completion status of a daily habit.
+   * @param habitId The ID of the habit
+   */
   toggleHabit: (habitId: string) => void;
+
+  /**
+   * Start this week's active challenge.
+   */
   startWeeklyChallenge: () => void;
-  checkChallengeCompletion: (params: ChallengeCheckParams) => void;
+
+  /**
+   * Check if parameters satisfy the active challenge completion.
+   * @param params Object containing weekly statistics
+   */
+  checkChallengeCompletion: (params: IChallengeCheckParams) => void;
+
+  /**
+   * Increment the counter for generated insights.
+   */
   incrementInsights: () => void;
+
+  /**
+   * Increment the counter for completed actions.
+   */
   incrementActionsCompleted: () => void;
+
+  /**
+   * Mark that the weekly report has been shown to the user.
+   */
   markReportShown: () => void;
 
+  /**
+   * Load gamification data from local storage.
+   */
   loadFromStorage: () => void;
+
+  /**
+   * Save gamification data to local storage.
+   */
   saveToStorage: () => void;
 }
 
-export interface ChallengeCheckParams {
+export interface IChallengeCheckParams {
   carTripsThisWeek: number;          // for no-car challenge
   vegetarianMealsThisWeek: number;   // for vegetarian challenge
   electricityKWhThisWeek: number;    // for energy challenge
@@ -83,16 +133,15 @@ const defaultState = {
   actionsCompletedCount: 0,
 };
 
-export const useGamificationStore = create<GamificationState>((set, get) => ({
+export const useGamificationStore = create<IGamificationState>((set, get) => ({
   ...defaultState,
 
-  addXP: (amount) => {
+  addXP: (amount: number): void => {
     set((state) => {
       const newXP = state.totalXP + amount;
       const newLevel = getLevelForXP(newXP).level;
       return { totalXP: newXP, level: newLevel };
     });
-    // Check eco-champion badge on level-up
     const { level, unlockedBadges } = get();
     if (level >= 5 && !unlockedBadges.includes('eco-champion')) {
       get().unlockBadge('eco-champion');
@@ -100,11 +149,11 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  checkAndUpdateStreak: () => {
+  checkAndUpdateStreak: (): void => {
     const today = getTodayString();
     const { lastLogDate, currentStreak, longestStreak, unlockedBadges } = get();
 
-    if (lastLogDate === today) return; // already logged today
+    if (lastLogDate === today) return;
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -115,7 +164,6 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
 
     set({ currentStreak: newStreak, longestStreak: newLongest, lastLogDate: today });
 
-    // Streak badges
     if (newStreak >= 7 && !unlockedBadges.includes('week-warrior')) {
       get().unlockBadge('week-warrior');
       get().addXP(XP_REWARDS.STREAK_7_DAYS);
@@ -128,7 +176,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  unlockBadge: (id) => {
+  unlockBadge: (id: string): void => {
     const { unlockedBadges } = get();
     if (unlockedBadges.includes(id)) return;
     const badge = BADGES.find((b) => b.id === id);
@@ -137,18 +185,17 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
       unlockedBadges: [...state.unlockedBadges, id],
       newlyUnlockedBadges: [...state.newlyUnlockedBadges, id],
     }));
-    // Bonus XP for unlocking
     setTimeout(() => {
       get().addXP(XP_REWARDS.UNLOCK_BADGE);
       get().saveToStorage();
     }, 0);
   },
 
-  dismissNewBadges: () => {
+  dismissNewBadges: (): void => {
     set({ newlyUnlockedBadges: [] });
   },
 
-  toggleHabit: (habitId) => {
+  toggleHabit: (habitId: string): void => {
     const today = getTodayString();
     const { habitsLog, unlockedBadges } = get();
     const todayHabits = habitsLog[today] || [];
@@ -157,15 +204,14 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
       ? todayHabits.filter((h) => h !== habitId)
       : [...todayHabits, habitId];
 
-    set((state) => ({
-      habitsLog: { ...state.habitsLog, [today]: updatedHabits },
-    }));
+    set({
+      habitsLog: { ...habitsLog, [today]: updatedHabits },
+    });
 
     if (!alreadyDone) {
       get().addXP(XP_REWARDS.TOGGLE_HABIT);
     }
 
-    // Habit Hero badge — all 6 habits in one day
     if (updatedHabits.length >= HABITS.length && !unlockedBadges.includes('habit-hero')) {
       get().unlockBadge('habit-hero');
     }
@@ -173,8 +219,8 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  startWeeklyChallenge: () => {
-    const challenge: Challenge = getWeeklyChallenge();
+  startWeeklyChallenge: (): void => {
+    const challenge: IChallenge = getWeeklyChallenge();
     set({
       challengeId: challenge.id,
       challengeStartDate: getTodayString(),
@@ -183,7 +229,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  checkChallengeCompletion: (params) => {
+  checkChallengeCompletion: (params: IChallengeCheckParams): void => {
     const { challengeId, challengeCompleted, unlockedBadges } = get();
     if (!challengeId || challengeCompleted) return;
 
@@ -207,7 +253,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     }
   },
 
-  incrementInsights: () => {
+  incrementInsights: (): void => {
     set((state) => ({ insightsGeneratedCount: state.insightsGeneratedCount + 1 }));
     get().addXP(XP_REWARDS.GENERATE_INSIGHTS);
     const { insightsGeneratedCount, unlockedBadges } = get();
@@ -217,7 +263,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  incrementActionsCompleted: () => {
+  incrementActionsCompleted: (): void => {
     set((state) => ({ actionsCompletedCount: state.actionsCompletedCount + 1 }));
     get().addXP(XP_REWARDS.COMPLETE_ACTION);
     const { actionsCompletedCount, unlockedBadges } = get();
@@ -227,16 +273,16 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  markReportShown: () => {
+  markReportShown: (): void => {
     set({ lastReportDate: getTodayString() });
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  loadFromStorage: () => {
+  loadFromStorage: (): void => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const data = decryptData<Partial<GamificationState>>(raw);
+        const data = decryptData<Partial<IGamificationState>>(raw);
         set({
           totalXP: data.totalXP ?? 0,
           level: data.level ?? 1,
@@ -260,7 +306,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     }
   },
 
-  saveToStorage: () => {
+  saveToStorage: (): void => {
     const state = get();
     const toSave = {
       totalXP: state.totalXP,

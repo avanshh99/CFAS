@@ -4,11 +4,12 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
-import type { Activity, ActivityCategory } from '../../types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import type { IActivity, ActivityCategory } from '@/types';
 
-interface MonthlyComparisonProps {
-  activities: Activity[];
+/** Props interface for MonthlyComparison component */
+export interface IMonthlyComparisonProps {
+  activities: IActivity[];
   className?: string;
 }
 
@@ -20,9 +21,12 @@ const CATEGORY_COLORS: Record<ActivityCategory, string> = {
   waste:     '#6b7280',
 };
 
-const MonthlyComparison: React.FC<MonthlyComparisonProps> = ({ activities, className }) => {
+/**
+ * MonthlyComparison displays a bar chart comparing category footprint totals
+ * over the last 3 calendar months.
+ */
+const MonthlyComparison: React.FC<IMonthlyComparisonProps> = ({ activities, className }) => {
   const chartData = useMemo(() => {
-    // Build last 3 calendar months
     const months: { key: string; label: string }[] = [];
     for (let i = 2; i >= 0; i--) {
       const d = new Date();
@@ -72,22 +76,25 @@ const MonthlyComparison: React.FC<MonthlyComparisonProps> = ({ activities, class
               <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} unit=" kg" />
               <Tooltip
                 contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
-                formatter={(value: any) => [`${value} kg`, '']}
+                formatter={(value: unknown) => [`${String(value)} kg`, '']}
               />
               <Legend
                 iconType="circle"
                 iconSize={8}
                 wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
               />
-              {(Object.keys(CATEGORY_COLORS) as ActivityCategory[]).map((cat) => (
-                <Bar
-                  key={cat}
-                  dataKey={cat}
-                  fill={CATEGORY_COLORS[cat]}
-                  radius={[3, 3, 0, 0]}
-                  maxBarSize={28}
-                />
-              ))}
+              {(Object.keys(CATEGORY_COLORS) as ActivityCategory[]).map((cat) => {
+                const color = CATEGORY_COLORS[cat];
+                return (
+                  <Bar
+                    key={cat}
+                    dataKey={cat}
+                    fill={color}
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={28}
+                  />
+                );
+              })}
             </BarChart>
           </ResponsiveContainer>
         )}

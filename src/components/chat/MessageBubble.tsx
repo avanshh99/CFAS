@@ -5,13 +5,18 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { User, Sparkles } from 'lucide-react';
-import type { ChatMessage } from '../../types';
+import type { IChatMessage } from '@/types';
 
-interface MessageBubbleProps {
-  message: ChatMessage;
+/** Props interface for MessageBubble component */
+export interface IMessageBubbleProps {
+  message: IChatMessage;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+/**
+ * MessageBubble component displays user messages and AI responses.
+ * Renders Markdown in AI responses.
+ */
+const MessageBubble: React.FC<IMessageBubbleProps> = ({ message }) => {
   const isUser = message.role === 'user';
 
   return (

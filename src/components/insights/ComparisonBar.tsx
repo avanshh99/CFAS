@@ -3,24 +3,28 @@
 // ============================================================
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
-import { Progress } from '../ui/Progress';
-import type { ComparisonData } from '../../types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
+import type { IComparisonData } from '@/types';
 
-interface ComparisonBarProps {
-  userValueTonnes: number; // yearly projection in tonnes
+/** Props interface for ComparisonBar component */
+export interface IComparisonBarProps {
+  userValueTonnes: number;
   className?: string;
 }
 
-const ComparisonBar: React.FC<ComparisonBarProps> = ({ userValueTonnes, className }) => {
-  const comparisonItems: ComparisonData[] = [
+/**
+ * ComparisonBar component compares the user's projected carbon footprint
+ * to regional averages and targets.
+ */
+const ComparisonBar: React.FC<IComparisonBarProps> = ({ userValueTonnes, className }) => {
+  const comparisonItems: IComparisonData[] = [
     { label: 'You (Projected)', value: userValueTonnes, color: '#16a34a', maxValue: 8 },
     { label: 'India Average', value: 1.8, color: '#3b82f6', maxValue: 8 },
-    { label: 'World Average', value: 4.8, color: '#ef4444', maxValue: 8 },
     { label: 'Paris Goal', value: 2.0, color: '#8b5cf6', maxValue: 8 },
+    { label: 'World Average', value: 4.8, color: '#ef4444', maxValue: 8 },
   ];
 
-  // Find dynamic maximum for normalisation
   const maxVal = Math.max(...comparisonItems.map((item) => item.value), 6);
 
   return (

@@ -80,52 +80,57 @@ export async function streamChatFromProxy(
 export async function generateInsights(
   messages: ChatCompletionRequest['messages']
 ): Promise<string> {
-  const response = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, stream: false }),
-  });
+  try {
+    const response = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, stream: false }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Proxy error: ${response.status}`);
-  }
+    if (!response.ok) {
+      throw new Error(`Proxy error: ${response.status}`);
+    }
 
-  // Try to read as JSON first, fall back to streaming
-  const contentType = response.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || '';
-  }
+    // Try to read as JSON first, fall back to streaming
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || '';
+    }
 
-  // Read SSE stream and collect full response
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error('Response body is not readable');
+    // Read SSE stream and collect full response
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('Response body is not readable');
 
-  const decoder = new TextDecoder();
-  let result = '';
-  let buffer = '';
+    const decoder = new TextDecoder();
+    let result = '';
+    let buffer = '';
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed === 'data: [DONE]') return result;
-      if (trimmed.startsWith('data: ')) {
-        try {
-          const data = JSON.parse(trimmed.slice(6));
-          result += data.choices?.[0]?.delta?.content || '';
-        } catch {
-          // Skip malformed chunks
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed === 'data: [DONE]') return result;
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(trimmed.slice(6));
+            result += data.choices?.[0]?.delta?.content || '';
+          } catch {
+            // Skip malformed chunks
+          }
         }
       }
     }
-  }
 
-  return result;
+    return result;
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    throw err;
+  }
 }

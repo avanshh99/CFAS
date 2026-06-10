@@ -1,13 +1,14 @@
 // WeeklyReportModal — Monday digest of last week's performance
 import React from 'react';
 import { X, TrendingDown, TrendingUp, Minus } from 'lucide-react';
-import { Button } from '../ui/Button';
-import XPBar from '../gamification/XPBar';
-import StreakBadge from '../gamification/StreakBadge';
-import type { DashboardStats } from '../../types';
+import { Button } from '@/components/ui/Button';
+import XPBar from '@/components/gamification/XPBar';
+import StreakBadge from '@/components/gamification/StreakBadge';
+import type { IDashboardStats } from '@/types';
 
-interface WeeklyReportModalProps {
-  stats: DashboardStats;
+/** Props interface for WeeklyReportModal component */
+export interface IWeeklyReportModalProps {
+  stats: IDashboardStats;
   totalXP: number;
   streak: number;
   weeklyGoalKg: number;
@@ -15,7 +16,10 @@ interface WeeklyReportModalProps {
   onClose: () => void;
 }
 
-const WeeklyReportModal: React.FC<WeeklyReportModalProps> = ({
+/**
+ * WeeklyReportModal shows weekly progress summary and gamification gains.
+ */
+const WeeklyReportModal: React.FC<IWeeklyReportModalProps> = ({
   stats,
   totalXP,
   streak,

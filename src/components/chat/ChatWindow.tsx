@@ -4,14 +4,16 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, PlusSquare, ArrowDown, ArrowLeft } from 'lucide-react';
-import { useChat } from '../../hooks/useChat';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
+import { useChat } from '@/hooks/useChat';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
-import { sanitizeForAI } from '../../utils/validators';
+import { sanitizeForAI } from '@/utils/validators';
+import { CHAT_SCROLL_THRESHOLD } from '@/constants';
 
-interface ChatWindowProps {
+/** Props interface for ChatWindow component */
+export interface IChatWindowProps {
   onSend?: (sanitizedContent: string) => void;
   className?: string;
 }
@@ -22,15 +24,26 @@ const QUICK_REPLIES = [
   'Give me a weekly carbon summary',
 ];
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ onSend, className }) => {
-  const { messages, isStreaming, error, viewingSessionId, sendMessage, saveAndClearSession, exitSessionView } = useChat();
+/**
+ * ChatWindow component provides the messaging UI to interact with EcoSense AI.
+ */
+const ChatWindow: React.FC<IChatWindowProps> = ({ onSend, className }) => {
+  const {
+    messages,
+    isStreaming,
+    error,
+    viewingSessionId,
+    sendMessage,
+    saveAndClearSession,
+    exitSessionView,
+  } = useChat();
   const [input, setInput] = useState('');
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const activeMessages = messages.filter((m) => m.role !== 'system');
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth'): void => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
         top: scrollRef.current.scrollHeight,
@@ -39,26 +52,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSend, className }) => {
     }
   }, []);
 
-  // Scroll on new message or during streaming
   useEffect(() => {
     scrollToBottom('smooth');
   }, [messages.length, isStreaming, scrollToBottom]);
 
-  // Initial scroll
   useEffect(() => {
     scrollToBottom('auto');
   }, [scrollToBottom]);
 
-  const handleScroll = useCallback(() => {
+  const handleScroll = useCallback((): void => {
     if (scrollRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      // Show button if user scrolled up more than 300px
-      setShowScrollBtn(scrollHeight - scrollTop - clientHeight > 300);
+      setShowScrollBtn(scrollHeight - scrollTop - clientHeight > CHAT_SCROLL_THRESHOLD);
     }
   }, []);
 
   const handleSend = useCallback(
-    async (text: string) => {
+    async (text: string): Promise<void> => {
       const trimmed = text.trim();
       if (!trimmed) return;
 
@@ -77,7 +87,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSend, className }) => {
   );
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    (e: React.FormEvent): void => {
       e.preventDefault();
       handleSend(input);
     },
@@ -85,6 +95,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSend, className }) => {
   );
 
   const isReadOnly = viewingSessionId !== null;
+  const lastMsg = activeMessages[activeMessages.length - 1];
 
   return (
     <Card className={`flex flex-col h-[600px] bg-white border border-gray-100 overflow-hidden ${className}`}>
@@ -224,9 +235,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSend, className }) => {
 
       {/* Live region for accessibility */}
       <div aria-live="polite" aria-atomic="false" className="sr-only">
-        {activeMessages[activeMessages.length - 1]?.role === 'assistant'
-          ? activeMessages[activeMessages.length - 1].content
-          : ''}
+        {lastMsg?.role === 'assistant' ? lastMsg.content : ''}
       </div>
     </Card>
   );

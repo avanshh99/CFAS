@@ -4,20 +4,32 @@
 
 import React from 'react';
 import { TrendingDown, TrendingUp, Minus, Target } from 'lucide-react';
-import { Card, CardContent } from '../ui/Card';
-import { Progress } from '../ui/Progress';
-import { Badge } from '../ui/Badge';
-import type { DashboardStats } from '../../types';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
+import { Badge } from '@/components/ui/Badge';
+import type { IDashboardStats } from '@/types';
 
-interface FootprintCardProps {
-  stats: DashboardStats;
+/** Props interface for FootprintCard component */
+export interface IFootprintCardProps {
+  stats: IDashboardStats;
   className?: string;
 }
 
-const FootprintCard: React.FC<FootprintCardProps> = ({ stats, className }) => {
+/**
+ * FootprintCard displays the current week's emissions, monthly budget progress,
+ * and yearly projections.
+ */
+const FootprintCard: React.FC<IFootprintCardProps> = ({ stats, className }) => {
   const isDown = stats.percentChange < 0;
   const isUp = stats.percentChange > 0;
   const isFlat = stats.percentChange === 0;
+
+  // Determine progress bar color props based on budget consumption
+  const progressProps = stats.budgetPercent > 80
+    ? { color: '#dc2626' }
+    : stats.budgetPercent > 60
+    ? { color: '#d97706' }
+    : {};
 
   return (
     <Card className={className}>
@@ -63,13 +75,7 @@ const FootprintCard: React.FC<FootprintCardProps> = ({ stats, className }) => {
           <Progress
             value={stats.budgetPercent}
             size="md"
-            color={
-              stats.budgetPercent > 80
-                ? '#dc2626'
-                : stats.budgetPercent > 60
-                ? '#d97706'
-                : undefined
-            }
+            {...progressProps}
           />
           <p className="text-xs text-gray-400 text-right">
             {stats.budgetPercent}% of monthly budget used

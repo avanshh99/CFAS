@@ -10,18 +10,19 @@ import {
   Cell,
   Tooltip,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import type { CategoryBreakdownItem } from '../../types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import type { ICategoryBreakdownItem } from '@/types';
 
-interface CategoryBreakdownProps {
-  data: CategoryBreakdownItem[];
+/** Props interface for CategoryBreakdown component */
+export interface ICategoryBreakdownProps {
+  data: ICategoryBreakdownItem[];
   className?: string;
 }
 
-interface TooltipPayloadItem {
+interface ITooltipPayloadItem {
   name: string;
   value: number;
-  payload: CategoryBreakdownItem;
+  payload: ICategoryBreakdownItem;
 }
 
 const CustomTooltip = ({
@@ -29,10 +30,11 @@ const CustomTooltip = ({
   payload,
 }: {
   active?: boolean;
-  payload?: TooltipPayloadItem[];
-}) => {
+  payload?: ITooltipPayloadItem[];
+}): React.JSX.Element | null => {
   if (!active || !payload?.length) return null;
   const item = payload[0];
+  if (!item) return null;
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-100 px-3 py-2">
       <p className="text-sm font-semibold text-gray-900 capitalize">{item.name}</p>
@@ -51,9 +53,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   waste: 'Waste',
 };
 
-const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({ data, className }) => {
+/**
+ * CategoryBreakdown renders a donut chart representation of weekly emissions by category.
+ */
+const CategoryBreakdown: React.FC<ICategoryBreakdownProps> = ({ data, className }) => {
   const chartData = useMemo(
-    () => data.map((d) => ({ ...d, name: CATEGORY_LABELS[d.category] || d.category })),
+    () => data.map((d) => ({
+      ...d,
+      name: CATEGORY_LABELS[d.category] ?? d.category,
+    })),
     [data]
   );
 

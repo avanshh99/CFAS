@@ -2,12 +2,24 @@
 // Carbon Calculator — CO₂e emission calculation engine
 // ============================================================
 
-import type { EmissionFactorKey, Activity, ActivityCategory, DashboardStats, CategoryBreakdownItem, DailyTrendItem } from '../types';
-import { EMISSION_FACTORS, FACTOR_CATEGORY_MAP, CATEGORY_COLORS } from '../constants/emissionFactors';
+import type {
+  EmissionFactorKey,
+  IActivity,
+  ActivityCategory,
+  IDashboardStats,
+  ICategoryBreakdownItem,
+  IDailyTrendItem,
+} from '@/types';
+import { EMISSION_FACTORS, FACTOR_CATEGORY_MAP, CATEGORY_COLORS } from '@/constants/emissionFactors';
 
 /**
  * Calculate CO₂e emissions for a given emission factor key and value.
+ * @param type The emission factor key
+ * @param value The logged numeric value (e.g. km traveled, kWh consumed)
+ * @returns The calculated emission in kg CO₂e
  * @throws {Error} if value is negative
+ * @example
+ * const co2 = calculateEmission('car_petrol_per_km', 10);
  */
 export function calculateEmission(type: EmissionFactorKey, value: number): number {
   if (value < 0) {
@@ -24,7 +36,11 @@ export function calculateEmission(type: EmissionFactorKey, value: number): numbe
 }
 
 /**
- * Calculate weekly total CO₂e from an array of activities.
+ * Calculate weekly total CO₂e from an array of activity inputs.
+ * @param activities List of activity inputs with type and value
+ * @returns The total weekly emissions in kg CO₂e
+ * @example
+ * const total = calculateWeeklyTotal([{ type: 'car_petrol_per_km', value: 15 }]);
  */
 export function calculateWeeklyTotal(
   activities: Array<{ type: EmissionFactorKey; value: number }>
@@ -36,6 +52,8 @@ export function calculateWeeklyTotal(
 
 /**
  * Get the start of a week (Monday) for a given date.
+ * @param date The baseline date
+ * @returns A Date object set to Monday at 00:00:00.000
  */
 function getWeekStart(date: Date): Date {
   const d = new Date(date);
@@ -48,6 +66,8 @@ function getWeekStart(date: Date): Date {
 
 /**
  * Get the start of the previous week.
+ * @param date The baseline date
+ * @returns A Date object set to previous week's Monday at 00:00:00.000
  */
 function getPreviousWeekStart(date: Date): Date {
   const weekStart = getWeekStart(date);
@@ -56,9 +76,13 @@ function getPreviousWeekStart(date: Date): Date {
 }
 
 /**
- * Compute full dashboard statistics from activities.
+ * Compute full dashboard statistics from logged activities.
+ * @param activities List of all logged activities
+ * @returns The dashboard statistics object
+ * @example
+ * const stats = computeDashboardStats(activities);
  */
-export function computeDashboardStats(activities: Activity[]): DashboardStats {
+export function computeDashboardStats(activities: IActivity[]): IDashboardStats {
   const now = new Date();
   const weekStart = getWeekStart(now);
   const prevWeekStart = getPreviousWeekStart(now);
@@ -105,28 +129,30 @@ export function computeDashboardStats(activities: Activity[]): DashboardStats {
   };
 
   thisWeekActivities.forEach((a) => {
-    categoryTotals[a.category] += a.co2e;
+    const cat = a.category;
+    categoryTotals[cat] = (categoryTotals[cat] ?? 0) + a.co2e;
   });
 
   const totalForBreakdown = Object.values(categoryTotals).reduce((s, v) => s + v, 0);
 
-  const categoryBreakdown: CategoryBreakdownItem[] = (Object.keys(categoryTotals) as ActivityCategory[])
-    .map((category) => ({
-      category,
-      total: Math.round(categoryTotals[category] * 100) / 100,
-      percent: totalForBreakdown > 0
-        ? Math.round((categoryTotals[category] / totalForBreakdown) * 100)
-        : 0,
-      color: CATEGORY_COLORS[category],
-    }))
+  const categoryBreakdown: ICategoryBreakdownItem[] = (Object.keys(categoryTotals) as ActivityCategory[])
+    .map((category) => {
+      const total = categoryTotals[category] ?? 0;
+      return {
+        category,
+        total: Math.round(total * 100) / 100,
+        percent: totalForBreakdown > 0 ? Math.round((total / totalForBreakdown) * 100) : 0,
+        color: CATEGORY_COLORS[category],
+      };
+    })
     .filter((item) => item.total > 0)
     .sort((a, b) => b.total - a.total);
 
   // Top category
-  const topCategory = categoryBreakdown.length > 0 ? categoryBreakdown[0].category : null;
+  const topCategory = categoryBreakdown[0] ? categoryBreakdown[0].category : null;
 
   // Daily trend for past 7 days
-  const dailyTrend: DailyTrendItem[] = [];
+  const dailyTrend: IDailyTrendItem[] = [];
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(now);
@@ -142,9 +168,12 @@ export function computeDashboardStats(activities: Activity[]): DashboardStats {
       })
       .reduce((sum, a) => sum + a.co2e, 0);
 
+    const dayIdx = d.getDay();
+    const dayLabel = dayNames[dayIdx] ?? 'Day';
+
     dailyTrend.push({
-      date: d.toISOString().split('T')[0],
-      dayLabel: dayNames[d.getDay()],
+      date: d.toISOString().split('T')[0] ?? '',
+      dayLabel,
       total: Math.round(dayTotal * 100) / 100,
     });
   }
@@ -165,6 +194,8 @@ export function computeDashboardStats(activities: Activity[]): DashboardStats {
 
 /**
  * Get the category for an emission factor key.
+ * @param key The emission factor key
+ * @returns The parent activity category
  */
 export function getCategoryForFactor(key: EmissionFactorKey): ActivityCategory {
   return FACTOR_CATEGORY_MAP[key];

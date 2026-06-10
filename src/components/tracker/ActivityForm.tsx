@@ -9,16 +9,16 @@ import { z } from 'zod';
 import {
   Car, Zap, UtensilsCrossed, ShoppingBag, Trash2, Leaf,
 } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import {
   CATEGORY_OPTIONS,
   FACTOR_LABELS,
   FACTOR_UNITS,
-} from '../../constants/emissionFactors';
-import { calculateEmission } from '../../utils/carbonCalculator';
-import type { ActivityCategory, EmissionFactorKey } from '../../types';
+} from '@/constants/emissionFactors';
+import { calculateEmission } from '@/utils/carbonCalculator';
+import type { ActivityCategory, EmissionFactorKey } from '@/types';
 
 const formSchema = z.object({
   value: z
@@ -29,7 +29,8 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-interface ActivityFormProps {
+/** Props interface for ActivityForm component */
+export interface IActivityFormProps {
   onSubmit: (type: EmissionFactorKey, value: number) => void;
   isLoading?: boolean;
   className?: string;
@@ -48,7 +49,10 @@ const categoryConfig: Array<{
   { key: 'waste', label: 'Waste', icon: <Trash2 className="h-4 w-4" />, color: 'gray' },
 ];
 
-const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmit, isLoading = false, className }) => {
+/**
+ * ActivityForm provides the interface to input and log daily carbon-producing activities.
+ */
+const ActivityForm: React.FC<IActivityFormProps> = ({ onSubmit, isLoading = false, className }) => {
   const [selectedCategory, setSelectedCategory] = useState<ActivityCategory>('transport');
   const [selectedType, setSelectedType] = useState<EmissionFactorKey>('car_petrol_per_km');
   const [lastResult, setLastResult] = useState<{ co2e: number; label: string } | null>(null);
@@ -63,32 +67,36 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmit, isLoading = false
   });
 
   const typeOptions = useMemo(
-    () =>
-      CATEGORY_OPTIONS[selectedCategory].map((key) => ({
+    () => {
+      const options = CATEGORY_OPTIONS[selectedCategory];
+      return options.map((key) => ({
         value: key,
         label: FACTOR_LABELS[key],
-      })),
+      }));
+    },
     [selectedCategory]
   );
 
   const currentUnit = FACTOR_UNITS[selectedType];
 
   const handleCategoryChange = useCallback(
-    (cat: ActivityCategory) => {
+    (cat: ActivityCategory): void => {
       setSelectedCategory(cat);
-      setSelectedType(CATEGORY_OPTIONS[cat][0]);
+      const firstOpt = CATEGORY_OPTIONS[cat][0];
+      if (firstOpt) {
+        setSelectedType(firstOpt);
+      }
     },
     []
   );
 
   const onFormSubmit = useCallback(
-    (data: FormData) => {
+    (data: FormData): void => {
       const co2e = calculateEmission(selectedType, data.value);
       onSubmit(selectedType, data.value);
       setLastResult({ co2e, label: FACTOR_LABELS[selectedType] });
       reset();
 
-      // Clear result after 4 seconds
       setTimeout(() => setLastResult(null), 4000);
     },
     [selectedType, onSubmit, reset]

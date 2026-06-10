@@ -25,7 +25,7 @@ export type EmissionFactorKey =
   | 'landfill_per_kg' | 'recycled_per_kg' | 'composted_per_kg';
 
 /** A single logged activity */
-export interface Activity {
+export interface IActivity {
   id: string;
   category: ActivityCategory;
   type: EmissionFactorKey;
@@ -38,7 +38,7 @@ export interface Activity {
 }
 
 /** Chat message for AI assistant */
-export interface ChatMessage {
+export interface IChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -46,7 +46,7 @@ export interface ChatMessage {
 }
 
 /** AI-generated insight */
-export interface Insight {
+export interface IInsight {
   id: string;
   type: 'pattern' | 'comparison' | 'actionable';
   title: string;
@@ -56,7 +56,7 @@ export interface Insight {
 }
 
 /** Suggested action for the user */
-export interface SuggestedAction {
+export interface ISuggestedAction {
   id: string;
   description: string;
   category: ActivityCategory;
@@ -66,7 +66,7 @@ export interface SuggestedAction {
 }
 
 /** User settings / preferences */
-export interface UserSettings {
+export interface IUserSettings {
   name: string;
   region: string;
   monthlyBudgetKg: number;
@@ -75,7 +75,7 @@ export interface UserSettings {
 }
 
 /** Dashboard summary stats */
-export interface DashboardStats {
+export interface IDashboardStats {
   weeklyTotal: number;
   previousWeekTotal: number;
   percentChange: number;
@@ -84,25 +84,25 @@ export interface DashboardStats {
   budgetPercent: number;
   yearlyProjection: number;
   topCategory: ActivityCategory | null;
-  categoryBreakdown: CategoryBreakdownItem[];
-  dailyTrend: DailyTrendItem[];
+  categoryBreakdown: ICategoryBreakdownItem[];
+  dailyTrend: IDailyTrendItem[];
 }
 
-export interface CategoryBreakdownItem {
+export interface ICategoryBreakdownItem {
   category: ActivityCategory;
   total: number;
   percent: number;
   color: string;
 }
 
-export interface DailyTrendItem {
+export interface IDailyTrendItem {
   date: string;
   dayLabel: string;
   total: number;
 }
 
 /** Comparison bar data */
-export interface ComparisonData {
+export interface IComparisonData {
   label: string;
   value: number;
   maxValue: number;
@@ -110,10 +110,10 @@ export interface ComparisonData {
 }
 
 /** A saved conversation session (GPT-style history) */
-export interface ChatSession {
+export interface IChatSession {
   id: string;
   title: string;           // Auto-generated from first user message
-  messages: ChatMessage[];
+  messages: IChatMessage[];
   createdAt: number;
   updatedAt: number;
 }

@@ -1,17 +1,20 @@
 // CarbonEquivalence — rotating equivalence comparisons widget
 import React, { useEffect, useState } from 'react';
-import { getEquivalences } from '../../utils/carbonEquivalences';
+import { getEquivalences } from '@/utils/carbonEquivalences';
 
-interface CarbonEquivalenceProps {
+/** Props interface for CarbonEquivalence component */
+export interface ICarbonEquivalenceProps {
   weeklyKg: number;
   className?: string;
 }
 
-const CarbonEquivalence: React.FC<CarbonEquivalenceProps> = ({ weeklyKg, className }) => {
+/**
+ * CarbonEquivalence widget shows user-friendly comparisons of the carbon footprint.
+ */
+const CarbonEquivalence: React.FC<ICarbonEquivalenceProps> = ({ weeklyKg, className }) => {
   const equivalences = getEquivalences(weeklyKg);
   const [idx, setIdx] = useState(0);
 
-  // Rotate every 4 seconds
   useEffect(() => {
     if (equivalences.length <= 1) return;
     const timer = setInterval(() => {
@@ -30,6 +33,7 @@ const CarbonEquivalence: React.FC<CarbonEquivalenceProps> = ({ weeklyKg, classNa
   }
 
   const eq = equivalences[idx];
+  if (!eq) return null;
 
   return (
     <div className={`relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 text-white p-5 ${className}`}>

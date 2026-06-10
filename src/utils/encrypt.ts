@@ -8,6 +8,10 @@ const ENCRYPTION_KEY = import.meta.env.VITE_STORAGE_KEY || 'ecosense-local-key-v
 
 /**
  * Encrypt data before storing in localStorage.
+ * @param data The raw data to encrypt
+ * @returns The encrypted string representation
+ * @example
+ * const cipher = encryptData({ secret: 'info' });
  */
 export const encryptData = (data: unknown): string => {
   return CryptoJS.AES.encrypt(JSON.stringify(data), ENCRYPTION_KEY).toString();
@@ -15,6 +19,11 @@ export const encryptData = (data: unknown): string => {
 
 /**
  * Decrypt data retrieved from localStorage.
+ * @param cipher The encrypted string to decrypt
+ * @returns The decrypted and parsed object of type T
+ * @throws Error if decryption fails or data is corrupted
+ * @example
+ * const data = decryptData<{ secret: string }>(cipher);
  */
 export const decryptData = <T>(cipher: string): T => {
   const bytes = CryptoJS.AES.decrypt(cipher, ENCRYPTION_KEY);

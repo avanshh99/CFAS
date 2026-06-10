@@ -1,15 +1,19 @@
 // OffsetCalculator — trees / solar panels / credits needed to go neutral
 import React from 'react';
-import { calcOffset } from '../../utils/carbonEquivalences';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
+import { calcOffset } from '@/utils/carbonEquivalences';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 
-interface OffsetCalculatorProps {
+/** Props interface for OffsetCalculator component */
+export interface IOffsetCalculatorProps {
   yearlyKg: number;
   currency?: 'INR' | 'USD';
   className?: string;
 }
 
-const OffsetCalculator: React.FC<OffsetCalculatorProps> = ({
+/**
+ * OffsetCalculator component displays actionable offset comparisons like tree planting or credits.
+ */
+const OffsetCalculator: React.FC<IOffsetCalculatorProps> = ({
   yearlyKg,
   currency = 'INR',
   className,
@@ -32,7 +36,7 @@ const OffsetCalculator: React.FC<OffsetCalculatorProps> = ({
           Carbon Offset Calculator
         </CardTitle>
         <CardDescription>
-          What it takes to neutralize your projected {yearlyKg.toFixed(1)} t/year footprint.
+          What it takes to neutralize your projected {(yearlyKg / 1000).toFixed(1)} t/year footprint.
         </CardDescription>
       </CardHeader>
       <CardContent>

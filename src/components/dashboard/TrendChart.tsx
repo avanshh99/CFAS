@@ -12,17 +12,18 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import type { DailyTrendItem } from '../../types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import type { IDailyTrendItem } from '@/types';
 
-interface TrendChartProps {
-  data: DailyTrendItem[];
+/** Props interface for TrendChart component */
+export interface ITrendChartProps {
+  data: IDailyTrendItem[];
   className?: string;
 }
 
-interface TooltipPayloadItem {
+interface ITooltipPayloadItem {
   value: number;
-  payload: DailyTrendItem;
+  payload: IDailyTrendItem;
 }
 
 const CustomTooltip = ({
@@ -30,10 +31,11 @@ const CustomTooltip = ({
   payload,
 }: {
   active?: boolean;
-  payload?: TooltipPayloadItem[];
-}) => {
+  payload?: ITooltipPayloadItem[];
+}): React.JSX.Element | null => {
   if (!active || !payload?.length) return null;
   const item = payload[0];
+  if (!item) return null;
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-100 px-3 py-2">
       <p className="text-xs text-gray-500">{item.payload.date}</p>
@@ -44,7 +46,10 @@ const CustomTooltip = ({
   );
 };
 
-const TrendChart: React.FC<TrendChartProps> = ({ data, className }) => {
+/**
+ * TrendChart component renders an area chart showing daily emission totals.
+ */
+const TrendChart: React.FC<ITrendChartProps> = ({ data, className }) => {
   const chartData = useMemo(() => data, [data]);
 
   return (

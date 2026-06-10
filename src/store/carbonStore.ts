@@ -3,36 +3,70 @@
 // ============================================================
 
 import { create } from 'zustand';
-import type { Activity, SuggestedAction, UserSettings } from '../types';
-import { encryptData, decryptData } from '../utils/encrypt';
-import { useGamificationStore } from './gamificationStore';
+import type { IActivity, ISuggestedAction, IUserSettings } from '@/types';
+import { encryptData, decryptData } from '@/utils/encrypt';
+import { useGamificationStore } from '@/store/gamificationStore';
 
-interface CarbonState {
-  activities: Activity[];
-  actions: SuggestedAction[];
-  settings: UserSettings;
+interface ICarbonState {
+  activities: IActivity[];
+  actions: ISuggestedAction[];
+  settings: IUserSettings;
   isLoading: boolean;
 
   // Activity CRUD
-  addActivity: (activity: Activity) => void;
+  /**
+   * Add a new carbon activity log.
+   * @param activity The activity log object
+   */
+  addActivity: (activity: IActivity) => void;
+
+  /**
+   * Remove an activity log by ID.
+   * @param id The activity ID to remove
+   */
   removeActivity: (id: string) => void;
+
+  /**
+   * Clear all activity logs from state and storage.
+   */
   clearActivities: () => void;
 
   // Actions
-  setActions: (actions: SuggestedAction[]) => void;
-  updateActionStatus: (id: string, status: SuggestedAction['status']) => void;
+  /**
+   * Set the list of suggested AI actions.
+   * @param actions The list of actions
+   */
+  setActions: (actions: ISuggestedAction[]) => void;
+
+  /**
+   * Update the status of a specific action.
+   * @param id The action ID
+   * @param status The new status
+   */
+  updateActionStatus: (id: string, status: ISuggestedAction['status']) => void;
 
   // Settings
-  updateSettings: (settings: Partial<UserSettings>) => void;
+  /**
+   * Update the user settings profile.
+   * @param settings The settings updates
+   */
+  updateSettings: (settings: Partial<IUserSettings>) => void;
 
   // Persistence
+  /**
+   * Load carbon activities, actions, and settings from local storage.
+   */
   loadFromStorage: () => void;
+
+  /**
+   * Save carbon activities, actions, and settings to local storage.
+   */
   saveToStorage: () => void;
 }
 
 const STORAGE_KEY = 'ecosense-carbon-data';
 
-const defaultSettings: UserSettings = {
+const defaultSettings: IUserSettings = {
   name: 'User',
   region: 'India',
   monthlyBudgetKg: 200,
@@ -40,25 +74,23 @@ const defaultSettings: UserSettings = {
   currency: 'INR',
 };
 
-export const useCarbonStore = create<CarbonState>((set, get) => ({
+export const useCarbonStore = create<ICarbonState>((set, get) => ({
   activities: [],
   actions: [],
   settings: defaultSettings,
   isLoading: false,
 
-  addActivity: (activity) => {
+  addActivity: (activity: IActivity): void => {
     set((state) => {
       const newActivities = [activity, ...state.activities];
       return { activities: newActivities };
     });
 
-    // Gamification checks
     const gamification = useGamificationStore.getState();
     gamification.checkAndUpdateStreak();
     gamification.unlockBadge('first-step');
-    gamification.addXP(10); // +10 XP for logging an activity
+    gamification.addXP(10);
 
-    // Compute weekly counts for challenge & badge verification
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const currentActivities = get().activities;
     const weeklyActs = currentActivities.filter((a) => a.timestamp >= oneWeekAgo);
@@ -70,7 +102,6 @@ export const useCarbonStore = create<CarbonState>((set, get) => ({
 
     const allHabitsLoggedDays = Object.values(gamification.habitsLog).filter((list) => list.length >= 6).length;
 
-    // Badges based on weekly activity patterns
     if (transitTrips >= 5) {
       gamification.unlockBadge('transit-switcher');
     }
@@ -78,7 +109,6 @@ export const useCarbonStore = create<CarbonState>((set, get) => ({
       gamification.unlockBadge('plant-powered');
     }
 
-    // Weekly challenge evaluation
     gamification.checkChallengeCompletion({
       carTripsThisWeek: carTrips,
       vegetarianMealsThisWeek: vegMeals,
@@ -87,28 +117,27 @@ export const useCarbonStore = create<CarbonState>((set, get) => ({
       allHabitsLoggedDays,
     });
 
-    // Persist after state update
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  removeActivity: (id) => {
+  removeActivity: (id: string): void => {
     set((state) => ({
       activities: state.activities.filter((a) => a.id !== id),
     }));
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  clearActivities: () => {
+  clearActivities: (): void => {
     set({ activities: [] });
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  setActions: (actions) => {
+  setActions: (actions: ISuggestedAction[]): void => {
     set({ actions });
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  updateActionStatus: (id, status) => {
+  updateActionStatus: (id: string, status: ISuggestedAction['status']): void => {
     set((state) => ({
       actions: state.actions.map((a) =>
         a.id === id ? { ...a, status } : a
@@ -117,21 +146,21 @@ export const useCarbonStore = create<CarbonState>((set, get) => ({
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  updateSettings: (newSettings) => {
+  updateSettings: (newSettings: Partial<IUserSettings>): void => {
     set((state) => ({
       settings: { ...state.settings, ...newSettings },
     }));
     setTimeout(() => get().saveToStorage(), 0);
   },
 
-  loadFromStorage: () => {
+  loadFromStorage: (): void => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const data = decryptData<{
-          activities: Activity[];
-          actions: SuggestedAction[];
-          settings: UserSettings;
+          activities: IActivity[];
+          actions: ISuggestedAction[];
+          settings: IUserSettings;
         }>(raw);
         set({
           activities: data.activities || [],
@@ -140,12 +169,11 @@ export const useCarbonStore = create<CarbonState>((set, get) => ({
         });
       }
     } catch {
-      // If decryption fails, start fresh
       localStorage.removeItem(STORAGE_KEY);
     }
   },
 
-  saveToStorage: () => {
+  saveToStorage: (): void => {
     const { activities, actions, settings } = get();
     const encrypted = encryptData({ activities, actions, settings });
     localStorage.setItem(STORAGE_KEY, encrypted);

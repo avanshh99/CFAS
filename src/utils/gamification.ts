@@ -17,7 +17,7 @@ export const XP_REWARDS = {
 } as const;
 
 // ── Levels ───────────────────────────────────────────────────
-export interface Level {
+export interface ILevel {
   level: number;
   name: string;
   emoji: string;
@@ -25,7 +25,7 @@ export interface Level {
   color: string;
 }
 
-export const LEVELS: Level[] = [
+export const LEVELS: ILevel[] = [
   { level: 1, name: 'Carbon Novice',    emoji: '🌿', minXP: 0,    color: '#6b7280' },
   { level: 2, name: 'Eco Curious',      emoji: '🌱', minXP: 500,  color: '#16a34a' },
   { level: 3, name: 'Green Thinker',    emoji: '🍃', minXP: 1000, color: '#0ea5e9' },
@@ -36,18 +36,28 @@ export const LEVELS: Level[] = [
 
 export const XP_PER_LEVEL = 500;
 
-export function getLevelForXP(xp: number): Level {
+/**
+ * Get the level details for a given XP amount.
+ * @param xp The user's total XP
+ * @returns The Level object
+ */
+export function getLevelForXP(xp: number): ILevel {
   for (let i = LEVELS.length - 1; i >= 0; i--) {
-    if (xp >= LEVELS[i].minXP) return LEVELS[i];
+    const lvl = LEVELS[i];
+    if (lvl && xp >= lvl.minXP) return lvl;
   }
-  return LEVELS[0];
+  return LEVELS[0]!;
 }
 
+/**
+ * Calculate the progress details towards the next level.
+ * @param xp The user's total XP
+ * @returns Object showing current progress XP, needed XP, and percentage
+ */
 export function getXPProgress(xp: number): { current: number; needed: number; percent: number } {
   const level = getLevelForXP(xp);
-  const nextLevelMinXP = level.level < LEVELS.length
-    ? LEVELS[level.level].minXP
-    : level.minXP + XP_PER_LEVEL;
+  const nextLevel = LEVELS[level.level];
+  const nextLevelMinXP = nextLevel ? nextLevel.minXP : level.minXP + XP_PER_LEVEL;
   const current = xp - level.minXP;
   const needed = nextLevelMinXP - level.minXP;
   const percent = Math.min(100, Math.round((current / needed) * 100));
@@ -55,7 +65,7 @@ export function getXPProgress(xp: number): { current: number; needed: number; pe
 }
 
 // ── Badges ───────────────────────────────────────────────────
-export interface Badge {
+export interface IBadge {
   id: string;
   name: string;
   emoji: string;
@@ -63,7 +73,7 @@ export interface Badge {
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
-export const BADGES: Badge[] = [
+export const BADGES: IBadge[] = [
   { id: 'first-step',       name: 'First Step',       emoji: '🌱', description: 'Log your first activity',           rarity: 'common'    },
   { id: 'week-warrior',     name: 'Week Warrior',     emoji: '🔥', description: '7-day logging streak',              rarity: 'rare'      },
   { id: 'month-master',     name: 'Month Master',     emoji: '🌙', description: '30-day logging streak',             rarity: 'epic'      },
@@ -78,7 +88,7 @@ export const BADGES: Badge[] = [
   { id: 'challenge-winner', name: 'Challenge Winner', emoji: '🎯', description: 'Complete a weekly challenge',       rarity: 'epic'      },
 ];
 
-export const RARITY_COLORS: Record<Badge['rarity'], string> = {
+export const RARITY_COLORS: Record<IBadge['rarity'], string> = {
   common:    'bg-gray-100 border-gray-200 text-gray-700',
   rare:      'bg-blue-50 border-blue-200 text-blue-700',
   epic:      'bg-purple-50 border-purple-200 text-purple-700',
@@ -86,14 +96,14 @@ export const RARITY_COLORS: Record<Badge['rarity'], string> = {
 };
 
 // ── Daily Habits ──────────────────────────────────────────────
-export interface Habit {
+export interface IHabit {
   id: string;
   emoji: string;
   label: string;
   xp: number;
 }
 
-export const HABITS: Habit[] = [
+export const HABITS: IHabit[] = [
   { id: 'walked',      emoji: '🚶', label: 'Walked instead of driving',  xp: 15 },
   { id: 'vegetarian',  emoji: '🥗', label: 'Vegetarian meal today',      xp: 15 },
   { id: 'lights-off',  emoji: '💡', label: 'Turned off lights when out', xp: 10 },
@@ -103,7 +113,7 @@ export const HABITS: Habit[] = [
 ];
 
 // ── Weekly Challenges ────────────────────────────────────────
-export interface Challenge {
+export interface IChallenge {
   id: string;
   name: string;
   emoji: string;
@@ -113,7 +123,7 @@ export interface Challenge {
   type: 'no-car' | 'vegetarian' | 'energy' | 'transit' | 'habits';
 }
 
-export const CHALLENGES: Challenge[] = [
+export const CHALLENGES: IChallenge[] = [
   {
     id: 'car-free-week',  name: 'Car-Free Week',    emoji: '🚗',
     description: 'Log zero petrol/diesel car trips this week',
@@ -141,17 +151,23 @@ export const CHALLENGES: Challenge[] = [
   },
 ];
 
-// Get this week's challenge by rotating based on ISO week number
-export function getWeeklyChallenge(): Challenge {
+/**
+ * Get the current week's challenge based on rotating ISO week number.
+ * @returns The Challenge object
+ */
+export function getWeeklyChallenge(): IChallenge {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const weekNum = Math.floor(
     (now.getTime() - startOfYear.getTime()) / (7 * 24 * 60 * 60 * 1000)
   );
-  return CHALLENGES[weekNum % CHALLENGES.length];
+  return CHALLENGES[weekNum % CHALLENGES.length]!;
 }
 
-// ── Today helper ──────────────────────────────────────────────
+/**
+ * Get current date as YYYY-MM-DD string.
+ * @returns Date string YYYY-MM-DD
+ */
 export function getTodayString(): string {
-  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  return new Date().toISOString().slice(0, 10);
 }
