@@ -78,7 +78,7 @@ const Chat: React.FC = () => {
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="text-sm font-semibold text-gray-900">EcoSense Assistant</span>
+          <span className="text-sm font-semibold text-gray-900">EcoSense Support</span>
         </div>
 
         {/* Chat window fills remaining height */}
