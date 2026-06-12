@@ -89,7 +89,6 @@ const Settings: React.FC = () => {
                   <option value="India">India (CEA Grid Factor)</option>
                   <option value="US">United States (EPA Grid Factor)</option>
                   <option value="Europe">Europe (EEA Grid Factor)</option>
-                  <option value="Other">Global Average (IPCC Grid Factor)</option>
                 </select>
                 {errors.region && (
                   <p className="mt-1 text-xs text-red-500" role="alert">
@@ -132,6 +131,7 @@ const Settings: React.FC = () => {
                 >
                   <option value="INR">INR (₹)</option>
                   <option value="USD">USD ($)</option>
+                  <option value="EURO">EURO (€)</option>
                 </select>
                 {errors.currency && (
                   <p className="mt-1 text-xs text-red-500" role="alert">
