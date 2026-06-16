@@ -55,8 +55,8 @@ const defaultActions: ISuggestedAction[] = [
     id: 'act-2',
     description: 'Unplug household electronics during idle night hours',
     category: 'energy',
-    monthlySavingKg: 12,
-    difficulty: 'Easy',
+    monthlySavingKg: 13,
+    difficulty: 'Medium',
     status: 'suggested',
   },
   {
@@ -64,7 +64,7 @@ const defaultActions: ISuggestedAction[] = [
     description: 'Adopt vegetarian lunch diet for 3 days a week',
     category: 'food',
     monthlySavingKg: 18,
-    difficulty: 'Medium',
+    difficulty: 'Hard',
     status: 'suggested',
   },
 ];
